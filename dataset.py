@@ -22,10 +22,12 @@ Author: Martin Engilberge
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from random import randint
 from torch.utils.data import Dataset
-
+import scipy.stats.stats as stats
+from utils import get_tiedrank
 
 def get_rand_seq(seq_len, ind=None):
     if ind is None:
@@ -88,9 +90,17 @@ class SeqDataset(Dataset):
 
     def __getitem__(self, index):
         rand_seq = get_rand_seq(self.seq_len, self.dist)
-        zipp_sort_ind = zip(np.argsort(rand_seq)[::-1], range(self.seq_len))
+        # rand_seq = np.array([1,3,3,5],dtype=np.float32)
+        ranks = stats.rankdata(rand_seq)
+        ranks = stats.rankdata(ranks) - 1   
+        ranks = (ranks * -1) + rand_seq.size
+        ranks = torch.from_numpy(ranks)
+        ranks = ranks.float()
+        ranks = ranks / rand_seq.size 
 
-        ranks = [((y[1] + 1) / float(self.seq_len)) for y in sorted(zipp_sort_ind, key=lambda x: x[0])]
+        # zipp_sort_ind = zip(np.argsort(rand_seq)[::-1], range(self.seq_len))
+
+        # ranks = [((y[1] + 1) / float(self.seq_len)) for y in sorted(zipp_sort_ind, key=lambda x: x[0])]
 
         return torch.FloatTensor(rand_seq), torch.FloatTensor(ranks)
 
@@ -99,10 +109,26 @@ class SeqDataset(Dataset):
 
 
 def get_rank_single(batch_score):
-        rank = torch.argsort(batch_score, dim=0)
-        rank = torch.argsort(rank, dim=0)
-        rank = (rank * -1) + batch_score.size(0)
-        rank = rank.float()
-        rank = rank / batch_score.size(0)
+    rank = torch.argsort(batch_score, dim=0)
+    rank = torch.argsort(rank, dim=0)
+    rank = (rank * -1) + batch_score.size(0)
+    rank = rank.float()
+    rank = rank / batch_score.size(0)
 
-        return rank
+    return rank
+
+def get_tied_rank_single(batch_score):
+    rank = stats.rankdata(batch_score)
+    rank = stats.rankdata(rank) - 1    
+    rank = (rank * -1) + batch_score.size(dim=0)
+    rank = torch.from_numpy(rank)
+    rank = rank.float()
+    rank = rank / batch_score.size(dim=0)  
+    return rank
+
+if __name__ == '__main__':
+    dset = SeqDataset(4)
+    train_loader = DataLoader(dset, batch_size=1, shuffle=False, num_workers=2)
+    for i, (s, r) in enumerate(train_loader):
+        seq_in, rank_in = s.float(), r.float()
+        print(seq_in, rank_in)

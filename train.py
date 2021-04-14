@@ -51,7 +51,6 @@ def train(train_loader, model, criterion, optimizer, epoch, print_freq=1):
 
         seq_in, rank_in = s.float().to(device, non_blocking=True), r.float().to(device, non_blocking=True)
         data_time.update(time.time() - end)
-
         optimizer.zero_grad()
         rank_hat = model(seq_in)
         loss = criterion(rank_hat, rank_in)
@@ -93,7 +92,6 @@ def validate(val_loader, model, criterion, print_freq=1):
 
         seq_in, rank_in = s.float().to(device, non_blocking=True), r.float().to(device, non_blocking=True)
         data_time.update(time.time() - end)
-
         with torch.set_grad_enabled(False):
             rank_hat = model(seq_in)
             loss = criterion(rank_hat, rank_in)
@@ -125,18 +123,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
 
     parser.add_argument("-n", '--name', default="model", help='Name of the model')
-    parser.add_argument("-bs", "--batch_size", help="The size of the batches", type=int, default=256)
+    parser.add_argument("-bs", "--batch_size", help="The size of the batches", type=int, default=128)
     parser.add_argument("-lr", dest="lr", help="Initialization of the learning rate", type=float, default=0.001)
     parser.add_argument("-lrs", dest="lr_steps", help="Number of epochs to step down LR", type=int, default=70)
     parser.add_argument("-mepoch", dest="mepoch", help="Max epoch", type=int, default=400)
     parser.add_argument("-pf", dest="print_frequency", help="Number of element processed between print", type=int, default=100)
-    parser.add_argument("-slen", dest="seq_len", help="lenght of the sequence process by the ranker", type=int, default=100)
+    parser.add_argument("-slen", dest="seq_len", help="lenght of the sequence process by the ranker", type=int, default=4)
     parser.add_argument("-d", dest="dist", help="index of a single distribution for dataset if None all the distribution will be used.", default=None)
-    parser.add_argument('-m', dest="model_type", help="Specify which model to use. (lstm, grus, gruc, grup, exa, lstmla, lstme, mlp, cnn) ", default='lstmla')
+    parser.add_argument('-m', dest="model_type", help="Specify which model to use. (lstm, grus, gruc, grup, exa, lstmla, lstme, mlp, cnn) ", default='mlp')
 
     args = parser.parse_args()
 
-    print("Using GPUs: ", os.environ['CUDA_VISIBLE_DEVICES'])
+    # print("Using GPUs: ", os.environ['CUDA_VISIBLE_DEVICES'])
 
     writer = SummaryWriter(os.path.join("./logs/", args.name))
 
@@ -175,7 +173,7 @@ if __name__ == '__main__':
         }
 
         log_epoch(writer, epoch, train_loss, val_loss, optimizer.param_groups[0]['lr'], batch_train, batch_val, data_train, data_val)
-        save_checkpoint(state, is_best, args.name, epoch)
+        save_checkpoint(state, is_best, args.name, args.seq_len, epoch)
 
     print('Finished Training')
     print(best_rec)

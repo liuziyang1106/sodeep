@@ -21,6 +21,7 @@ Author: Martin Engilberge
 """
 
 import torch
+import scipy.stats.stats as stats
 
 
 def get_rank(batch_score, dim=0):
@@ -32,6 +33,14 @@ def get_rank(batch_score, dim=0):
 
     return rank
 
+def get_tiedrank(batch_score, dim=0):
+    rank = stats.rankdata(batch_score)
+    rank = stats.rankdata(rank) - 1    
+    rank = (rank * -1) + batch_score.size(dim)
+    rank = torch.from_numpy(rank)
+    rank = rank.float()
+    rank = rank / batch_score.size(dim)  
+    return rank
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -63,9 +72,9 @@ def build_vocab(sentences):
     return vocab
 
 
-def save_checkpoint(state, is_best, model_name, epoch):
+def save_checkpoint(state, is_best, model_name, slen, epoch):
     if is_best:
-        torch.save(state, './weights/best_' + model_name + ".pth.tar")
+        torch.save(state, './weights/Tied_rank_best_' + model_name + "slen_"+ str(slen) + ".pth.tar")
 
 
 def count_parameters(model):

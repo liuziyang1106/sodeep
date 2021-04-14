@@ -24,7 +24,7 @@ Author: Martin Engilberge
 import torch
 import torch.nn as nn
 
-from utils import get_rank
+from utils import get_rank,get_tiedrank
 
 
 def model_loader(model_type, seq_len, pretrained_state_dict=None):
