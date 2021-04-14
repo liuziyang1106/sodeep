@@ -173,7 +173,7 @@ if __name__ == '__main__':
         }
 
         log_epoch(writer, epoch, train_loss, val_loss, optimizer.param_groups[0]['lr'], batch_train, batch_val, data_train, data_val)
-        save_checkpoint(state, is_best, args.name, args.seq_len, epoch)
+        save_checkpoint(state, is_best, args.model_type, args.seq_len, epoch)
 
     print('Finished Training')
     print(best_rec)

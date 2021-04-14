@@ -74,8 +74,7 @@ def build_vocab(sentences):
 
 def save_checkpoint(state, is_best, model_name, slen, epoch):
     if is_best:
-        torch.save(state, './weights/Tied_rank_best_' + model_name + "slen_"+ str(slen) + ".pth.tar")
-
+        torch.save(state, './weights/Tied_rank_best_' + model_name + "_slen_"+ str(slen) + ".pth.tar")
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
