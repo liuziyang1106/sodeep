@@ -35,7 +35,7 @@ By default the model used in the paper (lstm_large)  will be selected and the se
 More models are present in model.py and can be selected with the argument -m.
 
 ```sh
-python train.py -m gruc -n model_gruc
+python train.py -m gruc -n model_gruc -slen 8
 ```
 
 The GRU based model were developed after the publication of the paper and might perform better. 
